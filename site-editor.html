@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Editor — Aziz Abnar Quality Consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F6;--surface:#fff;--ink:#0B1B1A;--deep:#0B2B29;--teal:#16A394;
+    --teal-soft:#DDF1EE;--saffron:#E0A526;--line:#E4E7E5;--muted:#5B6B68;--radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .fa,input.fa,textarea.fa{font-family:'Vazirmatn',sans-serif}
+  h1,h2,h3{letter-spacing:-0.015em}
+  button{font-family:inherit;cursor:pointer}
+  /* gate */
+  .gate{position:fixed;inset:0;background:var(--deep);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
+  .gate-card{background:var(--surface);border-radius:20px;padding:40px;max-width:460px;width:100%;text-align:center}
+  .gate-card h1{font-size:24px;font-weight:800;margin-bottom:6px}
+  .gate-card p{color:var(--muted);margin-bottom:26px}
+  .role-btn{display:block;width:100%;text-align:start;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:18px 20px;margin-bottom:12px;transition:border-color .15s,transform .1s}
+  .role-btn:hover{border-color:var(--teal);transform:translateY(-1px)}
+  .role-btn b{display:block;font-size:16px;font-weight:800}
+  .role-btn span{color:var(--muted);font-size:13.5px}
+  .pass-row{display:none;margin-top:8px;gap:8px}
+  .pass-row.show{display:flex}
+  .pass-row input{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px}
+  .pass-row button{border:none;background:var(--deep);color:#fff;border-radius:10px;padding:0 18px;font-weight:700}
+  .gate-err{color:#C0392B;font-size:13px;min-height:1.1em;margin-top:8px}
+  /* shell */
+  .topbar{position:sticky;top:0;z-index:30;background:rgba(246,247,246,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .in{max-width:1240px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+  .brand{font-weight:800;font-size:15px}.brand span{color:var(--teal)}
+  .rolepill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:var(--teal-soft);color:#0c6f63}
+  .rolepill.rev{background:#FBEBCB;color:#8a6411}
+  .spacer{margin-inline-start:auto}
+  .linkbtn{background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+  /* stepper */
+  .stepper{max-width:1240px;margin:18px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+  .stp{flex:1;min-width:150px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;opacity:.55}
+  .stp.active{opacity:1;border-color:var(--teal);box-shadow:0 6px 20px -14px rgba(11,43,41,.5)}
+  .stp .n{width:24px;height:24px;border-radius:50%;background:var(--teal);color:#04201D;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .stp.rev .n{background:var(--saffron)}
+  .stp b{font-size:13.5px;display:block}.stp em{font-style:normal;color:var(--muted);font-size:12px}
+  /* layout */
+  .work{max-width:1240px;margin:18px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  @media(max-width:980px){.work{grid-template-columns:1fr}}
+  .col h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  details{border-bottom:1px solid var(--line)}
+  details:last-child{border-bottom:none}
+  summary{padding:14px 18px;font-weight:800;font-size:14.5px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";color:var(--teal);font-weight:800;width:14px}
+  details[open] summary::before{content:"–"}
+  .sec-body{padding:6px 18px 18px}
+  .field{margin-bottom:14px}
+  .flabel{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+  .flabel .fafa{color:#9aa6a3}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:560px){.pair{grid-template-columns:1fr}}
+  input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;transition:border-color .15s}
+  input:focus,textarea:focus{outline:none;border-color:var(--teal)}
+  textarea{resize:vertical;min-height:64px}
+  input[dir=rtl],textarea[dir=rtl]{text-align:right}
+  .mini{font-size:11px;color:#9aa6a3;margin-top:3px}
+  .listrow{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;position:relative}
+  .listrow .rm{position:absolute;top:8px;inset-inline-end:8px;background:#fff;border:1px solid var(--line);color:#C0392B;border-radius:8px;font-size:12px;font-weight:700;padding:3px 9px}
+  .addbtn{border:1px dashed var(--teal);background:var(--teal-soft);color:#0c6f63;font-weight:700;border-radius:10px;padding:9px;width:100%;font-size:13.5px}
+  /* preview + actions */
+  .sticky{position:sticky;top:84px}
+  .pvwrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .pvhead{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--muted)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--teal)}
+  iframe{width:100%;height:560px;border:none;background:#fff}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .btn{border:none;border-radius:999px;padding:12px 22px;font-weight:800;font-size:14px}
+  .btn.primary{background:var(--teal);color:#04201D}
+  .btn.primary:hover{background:#1FC3B1}
+  .btn.dark{background:var(--deep);color:#fff}.btn.dark:hover{background:#16403c}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.ghost:hover{border-color:var(--teal)}
+  .btn.gold{background:var(--saffron);color:#3a2a05}.btn.gold:hover{background:#eeb53f}
+  .toast{margin-top:12px;font-size:13.5px;font-weight:700;padding:12px 14px;border-radius:10px;display:none}
+  .toast.show{display:block}
+  .toast.ok{background:var(--teal-soft);color:#0c6f63}
+  .toast.warn{background:#FBEBCB;color:#8a6411}
+  /* diff */
+  .change{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .change .ttl{font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:8px}
+  .change .old,.change .new{font-size:13px;padding:8px 10px;border-radius:8px;white-space:pre-wrap}
+  .change .old{background:#FBE9E7;color:#7a2b20;margin-bottom:6px;text-decoration:line-through;text-decoration-color:#d99}
+  .change .new{background:var(--teal-soft);color:#0c5a50}
+  .empty{padding:26px;text-align:center;color:var(--muted);font-size:14px}
+  .filein{display:none}
+  .hint{font-size:12.5px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- gate -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <h1>Site Editor</h1>
+    <p class="fa">ویرایشگر وب‌سایت</p>
+    <button class="role-btn" id="pickEditor">
+      <b>I am editing &nbsp;·&nbsp; <span class="fa">ویرایش می‌کنم</span></b>
+      <span class="fa">برای بابا — متن‌ها را تغییر بده و برای تأیید بفرست</span>
+    </button>
+    <button class="role-btn" id="pickReviewer">
+      <b>I am reviewing &nbsp;·&nbsp; <span class="fa">بازبینی می‌کنم</span></b>
+      <span>Approve changes and build the website</span>
+    </button>
+    <div class="pass-row" id="passRow">
+      <input type="password" id="passInput" placeholder="Reviewer passcode" autocomplete="off">
+      <button id="passGo">Enter</button>
+    </div>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- shell -->
+<div class="topbar hide" id="shell">
+  <div class="in">
+    <div class="brand">Aziz Abnar <span>Site Editor</span></div>
+    <div class="rolepill" id="rolePill">Editor</div>
+    <div class="spacer"></div>
+    <button class="linkbtn" id="switchRole">Switch role</button>
+  </div>
+</div>
+
+<div class="stepper hide" id="stepper">
+  <div class="stp" data-stage="edit"><div class="n">1</div><div><b>Edit</b><em class="fa">ویرایش</em></div></div>
+  <div class="stp" data-stage="submit"><div class="n">2</div><div><b>Submit for approval</b><em class="fa">ارسال برای تأیید</em></div></div>
+  <div class="stp rev" data-stage="review"><div class="n">3</div><div><b>Review</b><em>by you</em></div></div>
+  <div class="stp rev" data-stage="publish"><div class="n">4</div><div><b>Build &amp; publish</b><em>by you</em></div></div>
+</div>
+
+<!-- EDITOR -->
+<div class="work hide" id="editorView">
+  <div class="col">
+    <h2>Content &nbsp;·&nbsp; <span class="fa">محتوا</span></h2>
+    <div class="hint fa">هر متن دو نسخه دارد: انگلیسی (چپ) و فارسی (راست). تغییر بده، پایین پیش‌نمایش را ببین، و وقتی آماده شد دکمه «ارسال برای تأیید» را بزن.</div>
+    <div class="panel" id="formPanel"></div>
+  </div>
+  <div class="col">
+    <h2>Live preview &nbsp;·&nbsp; <span class="fa">پیش‌نمایش</span></h2>
+    <div class="sticky">
+      <div class="pvwrap">
+        <div class="pvhead"><span class="dot"></span> Preview <span id="pvLang" style="margin-inline-start:auto;font-weight:700"></span></div>
+        <iframe id="preview" title="preview"></iframe>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="pvToggle">Show Farsi / نمایش فارسی</button>
+        <button class="btn ghost" id="saveDraft">Save draft / ذخیره</button>
+        <button class="btn primary" id="submitApproval">Submit for approval / ارسال برای تأیید</button>
+      </div>
+      <div class="toast" id="editorToast"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWER -->
+<div class="work hide" id="reviewerView">
+  <div class="col">
+    <h2>Pending changes &nbsp;·&nbsp; review</h2>
+    <div class="hint">Load the draft your dad sent (a <b>.json</b> file), or the one saved on this device. You will see every change before anything is built.</div>
+    <div class="actions" style="margin-top:0;margin-bottom:14px">
+      <button class="btn dark" id="loadPending">Load saved draft</button>
+      <button class="btn ghost" id="importBtn">Import draft file…</button>
+      <input type="file" id="importFile" class="filein" accept="application/json,.json">
+    </div>
+    <div class="panel" style="padding:6px">
+      <div id="diffList"><div class="empty">No draft loaded yet.</div></div>
+    </div>
+    <details class="panel" style="margin-top:16px">
+      <summary>Site settings (technical)</summary>
+      <div class="sec-body">
+        <div class="field"><div class="flabel">Domain (e.g. azizabnar-consulting.ca)</div><input id="setDomain"></div>
+        <div class="field"><div class="flabel">Formspree form ID (the part after /f/)</div><input id="setFormspree"><div class="mini">From formspree.io after creating the form.</div></div>
+        <button class="btn ghost" id="saveSettings">Apply settings</button>
+      </div>
+    </details>
+  </div>
+  <div class="col">
+    <h2>Decision &nbsp;·&nbsp; build</h2>
+    <div class="sticky">
+      <div class="pvwrap">
+        <div class="pvhead"><span class="dot" style="background:var(--saffron)"></span> Proposed site preview</div>
+        <iframe id="revPreview" title="review preview"></iframe>
+      </div>
+      <div class="actions">
+        <button class="btn gold" id="approveBtn">Approve &amp; download website</button>
+        <button class="btn ghost" id="sendBack">Send back with a note</button>
+      </div>
+      <div class="toast" id="reviewerToast"></div>
+    </div>
+  </div>
+</div>
+
+<!-- embedded validated site template (internal </script> tags are stored as @@ENDSCRIPT@@) -->
+<script type="text/template" id="siteTpl"><!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self' https://formspree.io; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src https://formspree.io">
+<title>[[NAME_EN]] | ISO 9001 &amp; Quality Consulting, Toronto</title>
+<meta name="description" content="ISO 9001, ISO 14001 and ISO 45001 consultant in Toronto. Implementation, internal audits and HSE consulting for small businesses in the GTA. Services in English and Farsi (مشاور ایزو در تورنتو).">
+<meta name="keywords" content="ISO 9001 consultant Toronto, ISO consultant GTA, ISO 14001, ISO 45001, HSE consultant, quality management system, internal audit, مشاور ایزو تورنتو, ایزو 9001">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://[[DOMAIN]].ca/">
+<link rel="alternate" hreflang="en-CA" href="https://[[DOMAIN]].ca/">
+<link rel="alternate" hreflang="fa" href="https://[[DOMAIN]].ca/?lang=fa">
+
+<!-- Open Graph (link previews on WhatsApp, Telegram, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="[[NAME_EN]] | ISO 9001 · 14001 · 45001 / HSE Consulting, Toronto">
+<meta property="og:description" content="Decades of industrial quality, inspection and HSE experience. ISO implementation and audits for GTA businesses, in English and Farsi.">
+<meta property="og:url" content="https://[[DOMAIN]].ca/">
+<meta property="og:locale" content="en_CA">
+<meta property="og:locale:alternate" content="fa_IR">
+<meta name="twitter:card" content="summary">
+
+<!-- Structured data: helps Google show him for "ISO consultant Toronto" -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "[[NAME_EN]] Quality Consulting",
+  "description": "ISO 9001, ISO 14001 and ISO 45001 implementation, internal audits, and HSE consulting for small and mid-size businesses.",
+  "url": "https://[[DOMAIN]].ca/",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Toronto",
+    "addressRegion": "ON",
+    "addressCountry": "CA"
+  },
+  "areaServed": ["Toronto", "North York", "Richmond Hill", "Thornhill", "Vaughan", "Greater Toronto Area"],
+  "knowsLanguage": ["en", "fa"],
+  "priceRange": "$$",
+  "founder": {
+    "@type": "Person",
+    "name": "[[NAME_EN]]",
+    "jobTitle": "ISO & Quality Management Consultant",
+    "knowsAbout": ["ISO 9001", "ISO 14001", "ISO 45001", "HSE", "Quality Control", "Industrial Inspection"]
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Consulting services",
+    "itemListElement": [
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "ISO 9001 implementation"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Internal audits and system maintenance"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "HSE, ISO 14001 and ISO 45001 consulting"}}
+    ]
+  }
+}
+@@ENDSCRIPT@@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF8F2; --cream:#FFFFFF; --sand:#F3EDE0; --teal-soft:#E6F1ED;
+    --ink:#16302B; --deep:#0E3A34; --deep2:#0A2C28;
+    --teal:#1A9C8A; --teal-bright:#23B7A3; --saffron:#DFA425; --saffron-soft:#F7E9C8;
+    --line:#E8E1D4; --line-soft:#EFEADF; --muted:#5C6A65;
+    --radius:18px; --maxw:1120px;
+    --shadow:0 22px 50px -34px rgba(14,58,52,.55);
+    --shadow-soft:0 12px 30px -22px rgba(14,58,52,.5);
+    --serif:'Fraunces',Georgia,serif; --sans:'Manrope',system-ui,sans-serif; --fa:'Vazirmatn',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  html[dir="rtl"] body{font-family:var(--fa)}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.018em;line-height:1.12;color:var(--ink)}
+  html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3{font-family:var(--fa);font-weight:700;letter-spacing:0;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  ::selection{background:var(--saffron-soft)}
+  :focus-visible{outline:2.5px solid var(--teal);outline-offset:3px;border-radius:6px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:40;background:rgba(250,248,242,.78);backdrop-filter:blur(14px) saturate(1.4);border-bottom:1px solid var(--line-soft)}
+  .bar{display:flex;align-items:center;gap:18px;height:68px}
+  .wordmark{font-weight:800;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+  .wordmark::before{content:"";width:22px;height:22px;border-radius:50%;background:
+    radial-gradient(circle at 50% 50%, var(--cream) 0 30%, transparent 31%),
+    conic-gradient(var(--teal),var(--teal-bright),var(--teal));box-shadow:0 0 0 2px var(--saffron) inset;flex-shrink:0}
+  .wordmark span{font-weight:500;color:var(--teal)}
+  html[dir="rtl"] .wordmark span{font-weight:600}
+  nav{display:flex;gap:26px;margin-inline-start:auto}
+  nav a{font-size:14px;font-weight:600;color:var(--muted);transition:color .2s}
+  nav a:hover{color:var(--ink)}
+  .bar-right{display:flex;align-items:center;gap:12px;margin-inline-start:18px}
+  .btn-mini{font-size:13.5px;font-weight:700;color:#fff;background:var(--deep);padding:9px 16px;border-radius:999px;transition:background .2s,transform .15s}
+  .btn-mini:hover{background:var(--teal);transform:translateY(-1px)}
+  .lang-toggle{font-family:var(--sans);font-size:13.5px;font-weight:700;color:var(--ink);background:none;border:1px solid var(--line);padding:8px 14px;border-radius:999px;cursor:pointer;transition:border-color .2s,background .2s}
+  html[dir="rtl"] .lang-toggle{font-family:var(--fa)}
+  .lang-toggle:hover{border-color:var(--teal);background:var(--cream)}
+  @media(max-width:840px){nav{display:none}}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;padding:clamp(48px,8vw,96px) 0 clamp(40px,6vw,72px)}
+  .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:20px}
+  html[dir="rtl"] .eyebrow{letter-spacing:.04em}
+  .hero h1{font-size:clamp(2.35rem,4.6vw,3.5rem);margin-bottom:22px}
+  .hero h1 .em{font-style:italic;color:var(--teal)}
+  .lede{font-size:clamp(1.05rem,1.6vw,1.22rem);color:#37463F;max-width:35em;margin-bottom:30px}
+  .cta-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .btn{font-family:var(--sans);font-weight:700;font-size:15px;padding:15px 28px;border-radius:999px;cursor:pointer;border:1px solid transparent;transition:transform .15s,background .2s,box-shadow .2s;display:inline-flex;align-items:center;gap:8px}
+  html[dir="rtl"] .btn{font-family:var(--fa)}
+  .btn-primary{background:var(--teal);color:#04221E;box-shadow:0 14px 28px -16px rgba(26,156,138,.9)}
+  .btn-primary:hover{background:var(--teal-bright);transform:translateY(-2px)}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--teal);background:var(--cream);transform:translateY(-2px)}
+  .hero-trust{margin-top:22px;font-size:13.5px;color:var(--muted);font-weight:600}
+  .hero-trust b{color:var(--saffron)}
+
+  /* seal */
+  .seal-wrap{display:flex;justify-content:center}
+  .seal{position:relative;width:min(330px,80vw);aspect-ratio:1;filter:drop-shadow(var(--shadow));animation:float 7s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .seal svg{width:100%;height:100%;display:block}
+  .seal .ring-o{fill:none;stroke:var(--teal);stroke-width:2}
+  .seal .ring-i{fill:none;stroke:var(--saffron);stroke-width:1.2;stroke-dasharray:1.5 5;stroke-linecap:round}
+  .seal .disc{fill:var(--cream)}
+  .seal .arc{fill:var(--teal);font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:3px}
+  .seal-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .seal-num{font-family:var(--serif);font-weight:600;font-size:62px;line-height:.9;color:var(--deep);direction:ltr;unicode-bidi:isolate}
+  .seal-label{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-top:8px;line-height:1.35}
+  html[dir="rtl"] .seal-label{letter-spacing:0;text-transform:none}
+  .seal-stars{color:var(--saffron);font-size:11px;letter-spacing:5px;margin-top:9px}
+  @media(max-width:780px){
+    .hero{grid-template-columns:1fr;gap:30px}
+    .seal-wrap{order:-1}
+    .seal{width:min(240px,62vw)}
+    .seal-num{font-size:46px}
+  }
+
+  /* trust strip */
+  .strip{border-block:1px solid var(--line);padding:22px 0;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .strip .cap{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  html[dir="rtl"] .strip .cap{letter-spacing:0;text-transform:none}
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{font-size:13px;font-weight:700;color:var(--deep);background:var(--teal-soft);border:1px solid #D4E8E2;padding:7px 14px;border-radius:9px}
+
+  /* sections */
+  section{padding-block:clamp(60px,8vw,100px)}
+  .band{background:var(--sand)}
+  .band-deep{background:radial-gradient(120% 140% at 80% 0%, var(--deep) 0%, var(--deep2) 70%)}
+  .head{margin-bottom:46px}
+  .kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+  html[dir="rtl"] .kicker{letter-spacing:.04em}
+  .head h2{font-size:clamp(1.7rem,3vw,2.3rem)}
+
+  /* services */
+  .services{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:820px){.services{grid-template-columns:1fr}}
+  .service{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:30px 28px;transition:transform .25s,box-shadow .25s,border-color .25s}
+  .service:hover{transform:translateY(-5px);box-shadow:var(--shadow-soft);border-color:#D7E6E1}
+  .ico{width:46px;height:46px;border-radius:13px;background:var(--teal-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .ico svg{width:24px;height:24px;fill:none;stroke:var(--teal);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .service h3{font-size:1.2rem;margin-bottom:11px}
+  .service p{font-size:14.8px;color:var(--muted)}
+
+  /* process */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;position:relative}
+  @media(max-width:820px){.steps{grid-template-columns:1fr;gap:18px}}
+  .step{position:relative;padding-top:8px}
+  .step .num{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:var(--cream);border:1.5px solid var(--teal);color:var(--deep);font-family:var(--serif);font-weight:600;font-size:18px;margin-bottom:18px}
+  .step h3{font-size:1.18rem;margin-bottom:10px}
+  .step p{font-size:14.8px;color:#46554F}
+  .band .step p{color:#46554F}
+
+  /* about */
+  .about{display:grid;grid-template-columns:1.1fr .9fr;gap:46px;align-items:start}
+  @media(max-width:820px){.about{grid-template-columns:1fr;gap:32px}}
+  .about p{margin-bottom:18px;color:#37463F;font-size:1.02rem}
+  .portrait{width:170px;height:170px;border-radius:20px;object-fit:cover;display:block;margin-bottom:26px;border:1px solid var(--line);box-shadow:0 14px 34px -24px rgba(20,20,20,.55)}
+  .sig{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+  .sig .nm{font-family:var(--serif);font-style:italic;font-weight:500;font-size:1.5rem;color:var(--deep)}
+  html[dir="rtl"] .sig .nm{font-family:var(--fa);font-style:normal;font-weight:700}
+  .sig .role{font-size:13px;font-weight:600;color:var(--muted);margin-top:3px}
+  .cred{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:12px 24px;box-shadow:var(--shadow-soft)}
+  .cred li{list-style:none;padding:15px 0;padding-inline-start:30px;position:relative;font-size:14.6px;font-weight:600;border-bottom:1px solid var(--line-soft)}
+  .cred li:last-child{border-bottom:none}
+  .cred li::before{content:"";position:absolute;inset-inline-start:0;top:19px;width:16px;height:16px;border-radius:50%;background:var(--teal-soft);
+    box-shadow:inset 0 0 0 1.5px var(--teal)}
+  .cred li::after{content:"";position:absolute;inset-inline-start:5px;top:23px;width:5px;height:8px;border:solid var(--teal);border-width:0 1.7px 1.7px 0;transform:rotate(45deg)}
+  html[dir="rtl"] .cred li::after{inset-inline-start:auto;inset-inline-end:5px}
+
+  /* articles */
+  .articles-list{display:flex;flex-direction:column;gap:14px}
+  .article-card{display:flex;align-items:center;gap:22px;background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;transition:transform .2s,border-color .2s,box-shadow .2s}
+  .article-card:hover{border-color:var(--teal);transform:translateX(5px);box-shadow:var(--shadow-soft)}
+  html[dir="rtl"] .article-card:hover{transform:translateX(-5px)}
+  .article-date{font-size:12.5px;font-weight:700;color:var(--saffron);white-space:nowrap;flex-shrink:0;min-width:88px}
+  .article-card h3{font-size:1.15rem;margin-bottom:5px}
+  .article-card p{font-size:14.5px;color:var(--muted)}
+  .article-card .arrow{margin-inline-start:auto;color:var(--teal);font-weight:800;font-size:20px;flex-shrink:0;transition:transform .2s}
+  html[dir="rtl"] .article-card .arrow{transform:scaleX(-1)}
+  @media(max-width:600px){.article-card{flex-direction:column;align-items:flex-start;gap:8px}.article-card .arrow{display:none}}
+
+  /* contact */
+  .band-deep .head h2,.band-deep h2{color:#F4F8F6}
+  .contact-intro{color:#B7CEC9;font-size:1.05rem;max-width:34em;margin-bottom:30px}
+  form{display:grid;gap:16px;max-width:540px}
+  .field{display:grid;gap:7px}
+  form label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#7FA8A2;font-weight:700}
+  html[dir="rtl"] form label{letter-spacing:0;text-transform:none}
+  input,textarea{font-family:inherit;font-size:15px;color:#F2F6F5;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:13px 15px;transition:border-color .15s,background .15s}
+  input::placeholder,textarea::placeholder{color:#6E938D}
+  input:focus,textarea:focus{outline:none;border-color:var(--teal-bright);background:rgba(255,255,255,.1)}
+  textarea{resize:vertical;min-height:124px}
+  .form-submit{justify-self:start;cursor:pointer;border:none;font-family:var(--sans);font-weight:800;font-size:15px;background:var(--saffron);color:#3a2a05;padding:15px 32px;border-radius:999px;transition:background .15s,transform .15s}
+  html[dir="rtl"] .form-submit{justify-self:end;font-family:var(--fa)}
+  .form-submit:hover{background:#eeb53f;transform:translateY(-2px)}
+  .form-status{font-size:14.5px;font-weight:700;min-height:1.2em;color:#9ED8CE}
+  .form-status.err{color:var(--saffron)}
+  .hp{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .note{margin-top:26px;font-size:13.5px;color:#8FAAA4;max-width:46em}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:30px 0;font-size:13.5px;color:var(--muted)}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important}
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root{--paper:#FFFFFF;--sand:#F4F4F3;--line:#E6E6E3;--line-soft:#EEEEEC;--muted:#6B6B68;--teal:#1C1C1B;--teal-bright:#333331;--deep:#1A1A19;--deep2:#111110;--teal-soft:#F0F0EE;--ink:#1A1A19;--saffron:#A98F57;--saffron-soft:#EEE6D2;}
+body{background:#FFFFFF}
+header{background:rgba(255,255,255,.85)}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:-.02em}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3{font-family:'Vazirmatn',sans-serif;font-weight:700;letter-spacing:0}
+.hero h1{font-size:clamp(2.6rem,5.6vw,4.1rem);line-height:1.06}
+.wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700}
+html[dir="rtl"] .wordmark{font-family:'Vazirmatn',sans-serif}
+.eyebrow,.kicker{color:#9E854E;letter-spacing:.2em}
+html[dir="rtl"] .eyebrow,html[dir="rtl"] .kicker{letter-spacing:.04em}
+.btn-primary{color:#F2F2F0}
+.btn-ghost{border:none;text-decoration:underline;text-underline-offset:5px}
+.seal .ring-o{stroke-width:1.1}
+.seal-num{font-family:'Space Grotesk',sans-serif;font-weight:600}
+.arc{letter-spacing:2.4px}
+.sig .nm{font-family:'Space Grotesk',sans-serif;font-style:normal;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="wordmark" data-en="[[NAME_EN]] <span>Quality Consulting</span>" data-fa="[[NAME_FA]] <span>مشاوره کیفیت</span>"></div>
+    <nav>
+      <a href="#services" data-en="Services" data-fa="خدمات"></a>
+      <a href="#process" data-en="Process" data-fa="روند کار"></a>
+      <a href="#about" data-en="About" data-fa="درباره"></a>
+    </nav>
+    <div class="bar-right">
+      <a class="btn-mini" href="#contact" data-en="[[STEP1_TITLE_EN]]" data-fa="[[STEP1_TITLE_FA]]"></a>
+      <button class="lang-toggle" id="langToggle" aria-label="Switch language">فارسی</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="reveal">
+        <div class="eyebrow" data-en="ISO 9001 · 14001 · 45001 / HSE · Toronto / GTA" data-fa="ایزو ۹۰۰۱ · ۱۴۰۰۱ · ۴۵۰۰۱ / HSE · تورنتو"></div>
+        <h1 data-en="[[HERO_H1_EN]]" data-fa="[[HERO_H1_FA]]"></h1>
+        <p class="lede" data-en="[[HERO_LEDE_EN]]" data-fa="[[HERO_LEDE_FA]]"></p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#contact" data-en="Book a free assessment" data-fa="مشاوره رایگان بگیرید"></a>
+          <a class="btn btn-ghost" href="#services" data-en="What I do" data-fa="خدمات"></a>
+        </div>
+        <div class="hero-trust" data-en="Free first meeting <b>·</b> No obligation <b>·</b> English &amp; فارسی" data-fa="جلسه اول رایگان <b>·</b> بدون تعهد <b>·</b> فارسی و English"></div>
+      </div>
+
+      <div class="seal-wrap reveal">
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 240 240">
+            <defs>
+              <path id="sealArc" d="M120,120 m-95,0 a95,95 0 1,1 190,0 a95,95 0 1,1 -190,0"/>
+            </defs>
+            <circle class="ring-o" cx="120" cy="120" r="112"/>
+            <circle class="disc" cx="120" cy="120" r="103"/>
+            <circle class="ring-i" cx="120" cy="120" r="100"/>
+            <text class="arc"><textPath href="#sealArc" startOffset="2%">QUALITY · INSPECTION · ISO · HSE · TORONTO ·</textPath></text>
+          </svg>
+          <div class="seal-center">
+            <div class="seal-num">30+</div>
+            <div class="seal-label" data-en="companies guided<br>to ISO compliance" data-fa="شرکت، راهنمایی‌شده<br>تا انطباق با ایزو"></div>
+            <div class="seal-stars">✦ ✦ ✦</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <div class="strip reveal">
+      <span class="cap" data-en="Standards I work with" data-fa="استانداردهایی که با آن‌ها کار می‌کنم"></span>
+      <div class="chips">
+        <span class="chip">ISO 9001</span>
+        <span class="chip">ISO 14001</span>
+        <span class="chip">ISO 45001</span>
+        <span class="chip">HSE</span>
+        <span class="chip">ISO/TS 29001</span>
+        <span class="chip">ISO 19011</span>
+      </div>
+    </div>
+  </div>
+
+  <section id="services">
+    <div class="wrap reveal">
+      <div class="head">
+        <span class="kicker" data-en="What I do" data-fa="چه کاری انجام می‌دهم"></span>
+        <h2 data-en="Services" data-fa="خدمات"></h2>
+      </div>
+      <div class="services">
+        <div class="service">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-5"/><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></svg></div>
+          <h3 data-en="[[SVC1_TITLE_EN]]" data-fa="[[SVC1_TITLE_FA]]"></h3>
+          <p data-en="[[SVC1_BODY_EN]]" data-fa="[[SVC1_BODY_FA]]"></p>
+        </div>
+        <div class="service">
+          <div class="ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3 data-en="[[SVC2_TITLE_EN]]" data-fa="[[SVC2_TITLE_FA]]"></h3>
+          <p data-en="[[SVC2_BODY_EN]]" data-fa="[[SVC2_BODY_FA]]"></p>
+        </div>
+        <div class="service">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 16V8l-9-5-9 5v8l9 5z"/><path d="M3.3 7.3L12 12l8.7-4.7"/><path d="M12 22V12"/></svg></div>
+          <h3 data-en="[[SVC3_TITLE_EN]]" data-fa="[[SVC3_TITLE_FA]]"></h3>
+          <p data-en="[[SVC3_BODY_EN]]" data-fa="[[SVC3_BODY_FA]]"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="process" class="band">
+    <div class="wrap reveal">
+      <div class="head">
+        <span class="kicker" data-en="Three steps" data-fa="سه گام"></span>
+        <h2 data-en="How it works" data-fa="روند کار"></h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="num">1</span>
+          <h3 data-en="Free assessment" data-fa="ارزیابی رایگان"></h3>
+          <p data-en="[[STEP1_BODY_EN]]" data-fa="[[STEP1_BODY_FA]]"></p>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <h3 data-en="[[STEP2_TITLE_EN]]" data-fa="[[STEP2_TITLE_FA]]"></h3>
+          <p data-en="[[STEP2_BODY_EN]]" data-fa="[[STEP2_BODY_FA]]"></p>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <h3 data-en="[[STEP3_TITLE_EN]]" data-fa="[[STEP3_TITLE_FA]]"></h3>
+          <p data-en="[[STEP3_BODY_EN]]" data-fa="[[STEP3_BODY_FA]]"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap reveal">
+      <div class="head">
+        <span class="kicker" data-en="Experience first" data-fa="تجربه، حرف اول"></span>
+        <h2 data-en="About" data-fa="درباره من"></h2>
+      </div>
+      <div class="about">
+        <div>
+          <img class="portrait" src="aziz.jpg" alt="[[NAME_EN]]" onerror="this.style.display='none'">
+          <p data-en="[[ABOUT_P1_EN]]" data-fa="[[ABOUT_P1_FA]]"></p>
+          <p data-en="[[ABOUT_P2_EN]]" data-fa="[[ABOUT_P2_FA]]"></p>
+          <div class="sig">
+            <div class="nm" data-en="[[NAME_EN]]" data-fa="[[NAME_FA]]"></div>
+            <div class="role" data-en="ISO &amp; Quality Management Consultant" data-fa="مشاور ایزو و مدیریت کیفیت"></div>
+          </div>
+        </div>
+        <ul class="cred">
+        [[CREDS]]
+      </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="contact" class="band-deep">
+    <div class="wrap reveal">
+      <div class="head">
+        <span class="kicker" style="color:var(--saffron)" data-en="Get in touch" data-fa="در تماس باشید"></span>
+        <h2 data-en="[[CONTACT_HEADING_EN]]" data-fa="[[CONTACT_HEADING_FA]]"></h2>
+      </div>
+      <p class="contact-intro" data-en="[[CONTACT_INTRO_EN]]" data-fa="[[CONTACT_INTRO_FA]]"></p>
+      <form id="contactForm" action="https://formspree.io/f/[[FORMSPREE_ID]]" method="POST" novalidate>
+        <div class="field">
+          <label for="cf-name" data-en="Name" data-fa="نام"></label>
+          <input id="cf-name" type="text" name="name" required data-ph-en="Your name" data-ph-fa="نام شما">
+        </div>
+        <div class="field">
+          <label for="cf-email" data-en="Your email" data-fa="ایمیل شما"></label>
+          <input id="cf-email" type="email" name="email" required data-ph-en="So I can reply to you" data-ph-fa="تا بتوانم به شما پاسخ دهم">
+        </div>
+        <div class="field">
+          <label for="cf-message" data-en="Message" data-fa="پیام"></label>
+          <textarea id="cf-message" name="message" required data-ph-en="Which standard, and a little about your business" data-ph-fa="کدام استاندارد، و کمی درباره کسب‌وکارتان"></textarea>
+        </div>
+        <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" class="form-submit" data-en="Send message" data-fa="ارسال پیام"></button>
+        <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
+      </form>
+      <p class="note" data-en="Serving Toronto, North York, Richmond Hill, Thornhill, Vaughan and the wider GTA. In-person or online. English · فارسی" data-fa="خدمات در تورنتو، نورت‌یورک، ریچموندهیل، تورن‌هیل، وان و سراسر منطقه GTA. حضوری یا آنلاین. فارسی · English"></p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap" data-en="© 2026 [[NAME_EN]] Quality Consulting · Toronto, Canada" data-fa="© ۲۰۲۶ [[NAME_FA]] مشاوره کیفیت · تورنتو، کانادا"></div>
+</footer>
+
+<script>
+  let lang = new URLSearchParams(location.search).get('lang') === 'fa' ? 'fa' : 'en';
+  const btn = document.getElementById('langToggle');
+  function render(){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-en]').forEach(el=>{
+      el.innerHTML = el.getAttribute('data-' + lang);
+    });
+    document.querySelectorAll('[data-ph-en]').forEach(el=>{
+      el.placeholder = el.getAttribute('data-ph-' + lang);
+    });
+    btn.textContent = (lang === 'fa') ? 'English' : 'فارسی';
+    document.title = (lang === 'fa')
+      ? '[[NAME_FA]] | مشاوره ایزو ۹۰۰۱ و کیفیت، تورنتو'
+      : '[[NAME_EN]] | ISO 9001 & Quality Consulting, Toronto';
+  }
+  btn.addEventListener('click', ()=>{ lang = (lang === 'en') ? 'fa' : 'en'; render(); });
+  render();
+
+  // contact form -> Formspree (email stays hidden in the form action / dashboard)
+  const form = document.getElementById('contactForm');
+  const formStatus = document.getElementById('formStatus');
+  const STATUS = {
+    sending: { en: 'Sending…', fa: 'در حال ارسال…' },
+    ok: { en: 'Thank you. Your message has been sent.', fa: 'سپاسگزارم. پیام شما ارسال شد.' },
+    err: { en: 'Something went wrong. Please email directly or try again.', fa: 'مشکلی پیش آمد. لطفاً مستقیم ایمیل بزنید یا دوباره تلاش کنید.' }
+  };
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formStatus.className = 'form-status';
+      formStatus.textContent = STATUS.sending[lang];
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          form.reset();
+          formStatus.className = 'form-status';
+          formStatus.textContent = STATUS.ok[lang];
+        } else {
+          formStatus.className = 'form-status err';
+          formStatus.textContent = STATUS.err[lang];
+        }
+      } catch (err) {
+        formStatus.className = 'form-status err';
+        formStatus.textContent = STATUS.err[lang];
+      }
+    });
+  }
+
+  // scroll reveal
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+@@ENDSCRIPT@@
+
+</body>
+</html>
+</script>
+<script type="application/json" id="seed">{
+  "meta": {
+    "name_en": "Aziz Abnar",
+    "name_fa": "عزیز ابنار",
+    "domain": "[YOURDOMAIN]",
+    "formspree_id": "FORMSPREE_ID"
+  },
+  "hero": {
+    "h1_en": "Get your business ISO certified, guided by decades of industrial quality and inspection experience.",
+    "h1_fa": "کسب‌وکار خود را با راهنمایی دهه‌ها تجربه صنعتی در کیفیت و بازرسی به گواهینامه ایزو برسانید.",
+    "lede_en": "I help small and mid-size businesses in the Greater Toronto Area build practical quality, environmental, and safety management systems and pass ISO certification without the jargon, in English or Farsi.",
+    "lede_fa": "من به کسب‌وکارهای کوچک و متوسط در تورنتو کمک می‌کنم سیستم‌های کاربردی کیفیت، محیط‌ زیست و ایمنی بسازند و گواهینامه‌های ایزو را بدون پیچیدگی بگیرند، به فارسی یا انگلیسی."
+  },
+  "services": [
+    {
+      "title_en": "ISO 9001 implementation",
+      "title_fa": "پیاده‌سازی ایزو ۹۰۰۱",
+      "body_en": "From gap analysis to certification audit: documentation, processes, and training tailored to your business, typically 3 to 6 months.",
+      "body_fa": "از تحلیل وضعیت موجود تا ممیزی نهایی: مستندسازی، فرآیندها و آموزش، متناسب با کسب‌وکار شما، معمولاً در ۳ تا ۶ ماه."
+    },
+    {
+      "title_en": "Internal audits & maintenance",
+      "title_fa": "ممیزی داخلی و نگهداری سیستم",
+      "body_en": "Already certified? I run your required internal audits and management reviews, and keep your system ready for surveillance audits.",
+      "body_fa": "اگر گواهینامه دارید، ممیزی‌های داخلی و بازنگری مدیریت را انجام می‌دهم و سیستم شما را برای ممیزی‌های مراقبتی آماده نگه می‌دارم."
+    },
+    {
+      "title_en": "HSE · ISO 14001 & 45001",
+      "title_fa": "HSE · ایزو ۱۴۰۰۱ و ۴۵۰۰۱",
+      "body_en": "Environmental and occupational health & safety management systems, from oil & gas-grade HSE experience to the safety paperwork construction and industrial contracts demand.",
+      "body_fa": "سیستم‌های مدیریت محیط‌ زیست و ایمنی و بهداشت شغلی، با تجربه HSE در سطح صنعت نفت و گاز، تا مدارک ایمنی که قراردادهای ساختمانی و صنعتی می‌خواهند."
+    }
+  ],
+  "about": {
+    "p1_en": "For more than three decades I worked in industrial quality and inspection, rising to Head of Quality Control and later Head of Technical Inspection at Iran’s national gas companies, where I led inspection, laboratory, and quality-control teams on major oil and gas projects. As a quality-management consultant I then implemented ISO 9001, IATF 16949, and ISO 14001 systems across more than 30 companies. I hold a BSc in Physics, with formal training in oil and gas quality management (ISO/TS 29001) and quality-system auditing (ISO 19011).",
+    "p1_fa": "بیش از سه دهه در حوزه کیفیت و بازرسی صنعتی کار کرده‌ام و در شرکت‌های ملی گاز ایران به سمت رئیس کنترل کیفیت و سپس رئیس بازرسی فنی رسیدم؛ در آنجا تیم‌های بازرسی، آزمایشگاه و کنترل کیفیت را در پروژه‌های بزرگ نفت و گاز رهبری کردم. سپس به‌عنوان مشاور مدیریت کیفیت، سیستم‌های ایزو ۹۰۰۱، IATF ۱۶۹۴۹ و ایزو ۱۴۰۰۱ را در بیش از ۳۰ شرکت پیاده‌سازی کردم. مدرک کارشناسی فیزیک دارم و آموزش رسمی مدیریت کیفیت نفت و گاز (ایزو/TS ۲۹۰۰۱) و ممیزی سیستم کیفیت (ایزو ۱۹۰۱۱) را گذرانده‌ام.",
+    "p2_en": "Now based in Toronto, I bring that experience to local businesses, especially those facing ISO requirements for the first time. I work hands-on, explain everything in plain language, and serve clients in English and Farsi.",
+    "p2_fa": "اکنون در تورنتو هستم و این تجربه را در اختیار کسب‌وکارهای محلی می‌گذارم، به‌ویژه آن‌هایی که برای اولین بار با الزامات ایزو روبه‌رو شده‌اند. حضوری و عملی کار می‌کنم، همه‌چیز را ساده توضیح می‌دهم و به فارسی و انگلیسی خدمات می‌دهم."
+  },
+  "creds": [
+    {
+      "en": "Former Head of Quality Control & Head of Technical Inspection, national gas industry",
+      "fa": "رئیس پیشین کنترل کیفیت و بازرسی فنی، صنعت ملی گاز"
+    },
+    {
+      "en": "DQS Quality Management training: ISO/TS 29001:2003 (oil & gas QMS) & ISO 19011 auditing, 2006",
+      "fa": "دوره مدیریت کیفیت DQS: ایزو/TS ۲۹۰۰۱:۲۰۰۳ (کیفیت صنایع نفت و گاز) و ممیزی ایزو ۱۹۰۱۱، ۲۰۰۶"
+    },
+    {
+      "en": "TRIZ & Kaizen continuous-improvement training, A.g.R (Sweden), 2014",
+      "fa": "دوره تریز و کایزن (بهبود مستمر)، A.g.R سوئد، ۲۰۱۴"
+    },
+    {
+      "en": "ISO 9001, IATF 16949 & ISO 14001 systems delivered across 30+ companies",
+      "fa": "پیاده‌سازی سیستم‌های ایزو ۹۰۰۱، IATF ۱۶۹۴۹ و ایزو ۱۴۰۰۱ در بیش از ۳۰ شرکت"
+    },
+    {
+      "en": "Six Sigma Green Belt (Canada) · BSc Physics",
+      "fa": "کمربند سبز شش سیگما (کانادا) · کارشناسی فیزیک"
+    },
+    {
+      "en": "Toronto-based · services in English & Farsi",
+      "fa": "مستقر در تورنتو · خدمات به فارسی و انگلیسی"
+    }
+  ],
+  "steps": [
+    {
+      "title_en": "Free assessment",
+      "title_fa": "مشاوره رایگان",
+      "body_en": "A one-hour visit or call. I review what your customers require and what you already have. No obligation.",
+      "body_fa": "یک جلسه یا تماس یک‌ساعته. بررسی می‌کنم مشتریان شما چه می‌خواهند و شما الان چه دارید. بدون هیچ تعهدی."
+    },
+    {
+      "title_en": "Clear plan & fixed quote",
+      "title_fa": "برنامه روشن و قیمت مشخص",
+      "body_en": "You get a written plan: what needs to be done, how long it takes, and exactly what it costs.",
+      "body_fa": "یک برنامه مکتوب دریافت می‌کنید: چه کارهایی لازم است، چقدر زمان می‌برد و دقیقاً چقدر هزینه دارد."
+    },
+    {
+      "title_en": "Implementation to certificate",
+      "title_fa": "اجرا تا دریافت گواهینامه",
+      "body_en": "I work alongside your team until the certification audit is passed, and stay available afterwards.",
+      "body_fa": "در کنار تیم شما کار می‌کنم تا ممیزی صدور گواهینامه با موفقیت انجام شود و بعد از آن هم در دسترس می‌مانم."
+    }
+  ],
+  "contact": {
+    "heading_en": "Start with a free assessment",
+    "heading_fa": "با یک ارزیابی رایگان شروع کنید",
+    "intro_en": "Send a short message about your business and what your customers are asking for. I reply within one business day, in English or Farsi.",
+    "intro_fa": "پیامی کوتاه درباره کسب‌وکارتان و آنچه مشتریانتان می‌خواهند بفرستید. ظرف یک روز کاری، به فارسی یا انگلیسی پاسخ می‌دهم."
+  },
+  "articles": []
+}</script>
+
+<script>
+"use strict";
+const REVIEWER_PASSCODE = "baba2026"; // soft guardrail so the editor view can't approve by accident; change as you like
+const LS = { pub:'abnar_pub', draft:'abnar_draft', pending:'abnar_pending' };
+
+const TPL = document.getElementById('siteTpl').textContent;
+const SEED = JSON.parse(document.getElementById('seed').textContent);
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ---- state ----
+function load(key, fallback){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch(e){ return fallback; } }
+function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+let PUB = load(LS.pub, null);
+if(!PUB){ PUB = clone(SEED); save(LS.pub, PUB); }
+let DRAFT = load(LS.draft, null);
+if(!DRAFT){ DRAFT = clone(PUB); save(LS.draft, DRAFT); }
+
+// ---- build deployable site ----
+function build(c){
+  let o = TPL;
+  const m = c.meta;
+  const map = {
+    NAME_EN:m.name_en, NAME_FA:m.name_fa, DOMAIN:m.domain, FORMSPREE_ID:m.formspree_id,
+    HERO_H1_EN:c.hero.h1_en, HERO_H1_FA:c.hero.h1_fa, HERO_LEDE_EN:c.hero.lede_en, HERO_LEDE_FA:c.hero.lede_fa,
+    ABOUT_P1_EN:c.about.p1_en, ABOUT_P1_FA:c.about.p1_fa, ABOUT_P2_EN:c.about.p2_en, ABOUT_P2_FA:c.about.p2_fa,
+    CONTACT_HEADING_EN:c.contact.heading_en, CONTACT_HEADING_FA:c.contact.heading_fa,
+    CONTACT_INTRO_EN:c.contact.intro_en, CONTACT_INTRO_FA:c.contact.intro_fa
+  };
+  c.services.forEach((s,i)=>{ const n=i+1; map['SVC'+n+'_TITLE_EN']=s.title_en; map['SVC'+n+'_TITLE_FA']=s.title_fa; map['SVC'+n+'_BODY_EN']=s.body_en; map['SVC'+n+'_BODY_FA']=s.body_fa; });
+  c.steps.forEach((s,i)=>{ const n=i+1; map['STEP'+n+'_TITLE_EN']=s.title_en; map['STEP'+n+'_TITLE_FA']=s.title_fa; map['STEP'+n+'_BODY_EN']=s.body_en; map['STEP'+n+'_BODY_FA']=s.body_fa; });
+  Object.keys(map).forEach(k=>{ o = o.split('[['+k+']]').join(esc(map[k])); });
+  const creds = c.creds.map(x=>'<li data-en="'+esc(x.en)+'" data-fa="'+esc(x.fa)+'"></li>').join('\n        ');
+  o = o.split('[[CREDS]]').join(creds);
+  const arts = c.articles.map(a=>(
+    '<a class="article-card" href="'+esc(a.href)+'">\n'+
+    '        <div class="article-date" data-en="'+esc(a.date_en)+'" data-fa="'+esc(a.date_fa)+'"></div>\n'+
+    '        <div>\n'+
+    '          <h3 data-en="'+esc(a.title_en)+'" data-fa="'+esc(a.title_fa)+'"></h3>\n'+
+    '          <p data-en="'+esc(a.desc_en)+'" data-fa="'+esc(a.desc_fa)+'"></p>\n'+
+    '        </div>\n'+
+    '        <span class="arrow" aria-hidden="true">\u2192</span>\n'+
+    '      </a>'
+  )).join('\n      ');
+  o = o.split('[[ARTICLES]]').join(arts);
+  o = o.split('@@ENDSCRIPT@@').join('<'+'/script>');
+  return o;
+}
+
+// ---- field schema ----
+const SECTIONS = [
+  {t:'Name', tf:'نام', f:[ {p:'meta.name', le:'Display name', lf:'نام نمایشی'} ]},
+  {t:'Hero', tf:'بخش ابتدایی', f:[
+    {p:'hero.h1', le:'Headline', lf:'تیتر اصلی', ml:1},
+    {p:'hero.lede', le:'Intro line', lf:'مقدمه', ml:1}
+  ]},
+  {t:'Services', tf:'خدمات', f:[
+    {p:'services.0.title', le:'Service 1 title', lf:'عنوان خدمت ۱'}, {p:'services.0.body', le:'Service 1 text', lf:'متن خدمت ۱', ml:1},
+    {p:'services.1.title', le:'Service 2 title', lf:'عنوان خدمت ۲'}, {p:'services.1.body', le:'Service 2 text', lf:'متن خدمت ۲', ml:1},
+    {p:'services.2.title', le:'Service 3 title', lf:'عنوان خدمت ۳'}, {p:'services.2.body', le:'Service 3 text', lf:'متن خدمت ۳', ml:1}
+  ]},
+  {t:'About', tf:'درباره من', f:[
+    {p:'about.p1', le:'Paragraph 1', lf:'بند ۱', ml:1},
+    {p:'about.p2', le:'Paragraph 2', lf:'بند ۲', ml:1}
+  ]},
+  {t:'How it works', tf:'روند کار', f:[
+    {p:'steps.0.title', le:'Step 1 title', lf:'عنوان گام ۱'}, {p:'steps.0.body', le:'Step 1 text', lf:'متن گام ۱', ml:1},
+    {p:'steps.1.title', le:'Step 2 title', lf:'عنوان گام ۲'}, {p:'steps.1.body', le:'Step 2 text', lf:'متن گام ۲', ml:1},
+    {p:'steps.2.title', le:'Step 3 title', lf:'عنوان گام ۳'}, {p:'steps.2.body', le:'Step 3 text', lf:'متن گام ۳', ml:1}
+  ]},
+  {t:'Contact', tf:'تماس', f:[
+    {p:'contact.heading', le:'Heading', lf:'عنوان'},
+    {p:'contact.intro', le:'Intro text', lf:'متن', ml:1}
+  ]}
+];
+
+function getv(obj, path, lang){
+  const parts = path.split('.'); let node = obj;
+  for(let i=0;i<parts.length-1;i++) node = node[parts[i]];
+  return node[parts[parts.length-1]+'_'+lang];
+}
+function setv(obj, path, lang, val){
+  const parts = path.split('.'); let node = obj;
+  for(let i=0;i<parts.length-1;i++) node = node[parts[i]];
+  node[parts[parts.length-1]+'_'+lang] = val;
+}
+
+// ---- editor form ----
+function inputEl(path, lang){
+  const f = document.querySelector('[data-p="'+path+'"][data-lang="'+lang+'"]');
+  return f;
+}
+function buildForm(){
+  const host = document.getElementById('formPanel'); host.innerHTML='';
+  SECTIONS.forEach((sec, si)=>{
+    const d = document.createElement('details'); if(si===0) d.open=true;
+    const sum = document.createElement('summary'); sum.innerHTML = sec.t+' <span class="fa" style="color:#9aa6a3;font-weight:600">'+sec.tf+'</span>';
+    d.appendChild(sum);
+    const body = document.createElement('div'); body.className='sec-body';
+    sec.f.forEach(fl=>{
+      const wrap = document.createElement('div'); wrap.className='field';
+      wrap.innerHTML = '<div class="flabel">'+fl.le+' <span class="fafa fa">· '+fl.lf+'</span></div>';
+      const pair = document.createElement('div'); pair.className='pair';
+      ['en','fa'].forEach(lang=>{
+        const el = document.createElement(fl.ml?'textarea':'input');
+        if(lang==='fa'){ el.dir='rtl'; el.className='fa'; }
+        el.setAttribute('data-p', fl.p); el.setAttribute('data-lang', lang);
+        el.value = getv(DRAFT, fl.p, lang) || '';
+        el.addEventListener('input', ()=>{ setv(DRAFT, fl.p, lang, el.value); onEdit(); });
+        pair.appendChild(el);
+      });
+      wrap.appendChild(pair); body.appendChild(wrap);
+    });
+    d.appendChild(body); host.appendChild(d);
+  });
+  // credentials (dynamic list)
+  host.appendChild(listSection('Credentials', 'اعتبارنامه‌ها', 'creds',
+    [{k:'en',le:'English',rtl:0},{k:'fa',le:'فارسی',rtl:1}],
+    ()=>({en:'',fa:''})));
+}
+function listSection(t, tf, key, cols, blank){
+  const d = document.createElement('details');
+  d.innerHTML = '<summary>'+t+' <span class="fa" style="color:#9aa6a3;font-weight:600">'+tf+'</span></summary>';
+  const body = document.createElement('div'); body.className='sec-body';
+  function redraw(){
+    body.innerHTML='';
+    DRAFT[key].forEach((item, idx)=>{
+      const row = document.createElement('div'); row.className='listrow';
+      const rm = document.createElement('button'); rm.className='rm'; rm.textContent='Remove';
+      rm.onclick=()=>{ DRAFT[key].splice(idx,1); save(LS.draft,DRAFT); redraw(); onEdit(); };
+      row.appendChild(rm);
+      cols.forEach(col=>{
+        const fw=document.createElement('div'); fw.className='field'; fw.style.marginBottom='8px';
+        fw.innerHTML='<div class="flabel">'+col.le+'</div>';
+        const el=document.createElement(col.ml?'textarea':'input');
+        if(col.rtl){ el.dir='rtl'; el.className='fa'; }
+        el.value=item[col.k]||'';
+        el.addEventListener('input',()=>{ item[col.k]=el.value; onEdit(); });
+        fw.appendChild(el); row.appendChild(fw);
+      });
+      body.appendChild(row);
+    });
+    const add=document.createElement('button'); add.className='addbtn'; add.textContent='+ Add';
+    add.onclick=()=>{ DRAFT[key].push(blank()); save(LS.draft,DRAFT); redraw(); onEdit(); };
+    body.appendChild(add);
+  }
+  redraw(); d.appendChild(body); return d;
+}
+
+// ---- preview ----
+let previewLang='en';
+let editTimer=null;
+function renderPreview(){
+  let site = build(DRAFT);
+  if(previewLang==='fa') site = site.replace('<html lang="en" dir="ltr">','<html lang="fa" dir="rtl">').replace("get('lang') === 'fa' ? 'fa' : 'en'","get('lang')==='en'?'en':'fa'");
+  document.getElementById('preview').srcdoc = site;
+  document.getElementById('pvLang').textContent = previewLang==='fa'?'فارسی':'English';
+}
+function onEdit(){ save(LS.draft, DRAFT); clearTimeout(editTimer); editTimer=setTimeout(renderPreview, 350); markStage(); }
+
+// ---- stage indicator ----
+function markStage(){
+  const pending = load(LS.pending, null);
+  const dirty = JSON.stringify(DRAFT)!==JSON.stringify(PUB);
+  let stage = 'edit';
+  if(pending) stage='review';
+  else if(dirty) stage='submit';
+  document.querySelectorAll('.stp').forEach(s=>s.classList.toggle('active', s.dataset.stage===stage));
+}
+
+// ---- editor actions ----
+function toast(id, msg, kind){ const t=document.getElementById(id); t.className='toast show '+(kind||'ok'); t.innerHTML=msg; }
+function download(filename, text, type){
+  const blob=new Blob([text],{type:type||'text/plain'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function submitForApproval(){
+  save(LS.draft, DRAFT);
+  const payload = { kind:'abnar-site-draft', at:new Date().toISOString(), content:DRAFT };
+  save(LS.pending, {at:payload.at});
+  download('site-draft-for-approval.json', JSON.stringify(payload,null,2), 'application/json');
+  markStage();
+  toast('editorToast', 'Saved and downloaded <b>site-draft-for-approval.json</b>.<br>Send this file to your reviewer (Telegram or email). <span class="fa">این فایل را برای تأییدکننده بفرست.</span>', 'ok');
+}
+
+// ---- reviewer ----
+let REVIEW = null; // content under review
+function loadReview(content){
+  REVIEW = content;
+  document.getElementById('revPreview').srcdoc = build(REVIEW);
+  document.getElementById('setDomain').value = REVIEW.meta.domain||'';
+  document.getElementById('setFormspree').value = REVIEW.meta.formspree_id||'';
+  renderDiff();
+}
+function flatten(c){
+  const out=[];
+  SECTIONS.forEach(sec=>sec.f.forEach(fl=>{
+    ['en','fa'].forEach(l=>out.push([fl.p+'.'+l, fl.le+' ('+l.toUpperCase()+')', getv(c,fl.p,l)]));
+  }));
+  c.creds.forEach((x,i)=>{ out.push(['creds.'+i+'.en','Credential '+(i+1)+' (EN)',x.en]); out.push(['creds.'+i+'.fa','Credential '+(i+1)+' (FA)',x.fa]); });
+  out.push(['creds.count','Number of credentials', String(c.creds.length)]);
+  c.articles.forEach((a,i)=>{ out.push(['art.'+i+'.te','Article '+(i+1)+' title (EN)',a.title_en]); out.push(['art.'+i+'.tf','Article '+(i+1)+' title (FA)',a.title_fa]); });
+  out.push(['art.count','Number of articles', String(c.articles.length)]);
+  return out;
+}
+function renderDiff(){
+  const host=document.getElementById('diffList');
+  if(!REVIEW){ host.innerHTML='<div class="empty">No draft loaded yet.</div>'; return; }
+  const a=flatten(PUB), b=flatten(REVIEW);
+  const mapA={}; a.forEach(r=>mapA[r[0]]=r);
+  const changes=[];
+  b.forEach(r=>{ const old=mapA[r[0]]; const ov=old?old[2]:''; if((ov||'')!==(r[2]||'')) changes.push([r[1],ov||'(empty)',r[2]||'(empty)']); });
+  if(!changes.length){ host.innerHTML='<div class="empty">This draft is identical to what is published. Nothing to approve.</div>'; return; }
+  host.innerHTML = '<div style="padding:10px 12px;font-size:13px;color:var(--muted)"><b>'+changes.length+'</b> change(s) proposed</div>'+
+    changes.map(c=>'<div class="change"><div class="ttl">'+c[0]+'</div><div class="old">'+esc(c[1])+'</div><div class="new">'+esc(c[2])+'</div></div>').join('');
+}
+function approve(){
+  if(!REVIEW){ toast('reviewerToast','Load a draft first.','warn'); return; }
+  PUB = clone(REVIEW); save(LS.pub, PUB);
+  DRAFT = clone(PUB); save(LS.draft, DRAFT);
+  localStorage.removeItem(LS.pending);
+  download('iso-consultant-site.html', build(PUB), 'text/html');
+  toast('reviewerToast','Approved. Downloaded <b>iso-consultant-site.html</b> — upload this file to your host to publish. Nothing went live automatically.','ok');
+}
+
+// ---- gate / routing ----
+let ROLE=null;
+function enter(role){
+  ROLE=role;
+  document.getElementById('gate').classList.add('hide');
+  document.getElementById('shell').classList.remove('hide');
+  document.getElementById('stepper').classList.remove('hide');
+  const pill=document.getElementById('rolePill');
+  if(role==='editor'){
+    pill.textContent='Editor · بابا'; pill.className='rolepill';
+    document.getElementById('editorView').classList.remove('hide');
+    document.getElementById('reviewerView').classList.add('hide');
+    buildForm(); renderPreview();
+  }else{
+    pill.textContent='Reviewer'; pill.className='rolepill rev';
+    document.getElementById('reviewerView').classList.remove('hide');
+    document.getElementById('editorView').classList.add('hide');
+    const p=load(LS.pending,null);
+    if(p) loadReview(clone(DRAFT));
+  }
+  markStage();
+}
+document.getElementById('pickEditor').onclick=()=>enter('editor');
+document.getElementById('pickReviewer').onclick=()=>{
+  document.getElementById('passRow').classList.add('show');
+  document.getElementById('passInput').focus();
+};
+function tryPass(){
+  const v=document.getElementById('passInput').value;
+  if(v===REVIEWER_PASSCODE){ enter('reviewer'); }
+  else document.getElementById('gateErr').textContent='Incorrect passcode.';
+}
+document.getElementById('passGo').onclick=tryPass;
+document.getElementById('passInput').addEventListener('keydown',e=>{ if(e.key==='Enter') tryPass(); });
+document.getElementById('switchRole').onclick=()=>location.reload();
+
+// editor buttons
+document.getElementById('saveDraft').onclick=()=>{ save(LS.draft,DRAFT); toast('editorToast','Draft saved on this device.','ok'); };
+document.getElementById('submitApproval').onclick=submitForApproval;
+document.getElementById('pvToggle').onclick=()=>{ previewLang = previewLang==='en'?'fa':'en'; renderPreview(); };
+
+// reviewer buttons
+document.getElementById('loadPending').onclick=()=>{
+  const p=load(LS.pending,null);
+  if(!p){ toast('reviewerToast','No saved draft on this device. Use Import to load a file.','warn'); return; }
+  loadReview(clone(DRAFT));
+};
+document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+document.getElementById('importFile').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const data=JSON.parse(r.result); const content=data.content||data; loadReview(content); toast('reviewerToast','Draft loaded for review.','ok'); }catch(err){ toast('reviewerToast','That file could not be read as a draft.','warn'); } };
+  r.readAsText(file);
+});
+document.getElementById('approveBtn').onclick=approve;
+document.getElementById('sendBack').onclick=()=>{
+  if(!REVIEW){ toast('reviewerToast','Load a draft first.','warn'); return; }
+  const note=prompt('Optional note back to the editor:','');
+  localStorage.removeItem(LS.pending);
+  download('review-feedback.json', JSON.stringify({kind:'abnar-site-feedback',at:new Date().toISOString(),note:note||''},null,2),'application/json');
+  toast('reviewerToast','Sent back. Downloaded a small feedback file you can pass along. Nothing was published.','warn');
+};
+document.getElementById('saveSettings').onclick=()=>{
+  if(!REVIEW) return;
+  REVIEW.meta.domain=document.getElementById('setDomain').value.trim();
+  REVIEW.meta.formspree_id=document.getElementById('setFormspree').value.trim();
+  document.getElementById('revPreview').srcdoc=build(REVIEW);
+  toast('reviewerToast','Settings applied to this draft. Approve to bake them in.','ok');
+};
+
+// runtime fidelity self-check
+(function(){ const test=build(PUB); if(/\[\[[A-Z0-9_]+\]\]/.test(test)) console.warn('Template token left unfilled'); })();
+</script>
+</body>
+</html>
